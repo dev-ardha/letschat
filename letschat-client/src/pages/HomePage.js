@@ -6,18 +6,20 @@ import Navbar from '../components/Navbar'
 import SideNav from '../components/SideNav'
 import { UserContext } from '../contexts/UserContext'
 import Loader from '../components/Loader';
-import Axios from 'axios';
+import axios from '../utils/axios'
 import { useHistory } from 'react-router-dom'
 import { SocketProvider } from '../contexts/SocketContext'
+import jwt from 'jsonwebtoken';
+import Cookies from 'js-cookie';
 
 function HomePage() {
+    // Context
     const [user, setUser] = useContext(UserContext)
+
     const [openedRoom, setOpenedRoom] = useState()
     const rooms = user?.rooms;
     const [currentText, setCurrentText] = useState()
-    const [listOfMessage, setListOfMessage] = useState()
 
-    // Get user and set to global state
     const history = useHistory()
 
     const me = window.localStorage.getItem('userId')
@@ -27,16 +29,33 @@ function HomePage() {
 
     useEffect(() => {
         async function fetchData(){
-            const response = await Axios.get(`http://localhost:4000/api/v1/auth/me/${me}`)
+            const response = await axios.get(`/api/v1/auth/me/${me}`)
             if(response.data){
-                setUser(response.data)
+                const secret = response.data.secret
+                const token = Cookies.get('accToken');
+
+                if(!token){
+                    history.push('/login')
+                }
+
+                try {
+                    const decoded = jwt.verify(token, secret);
+                    if(decoded){
+                        if(decoded.id === response.data.user._id){
+                            setUser(response.data.user)
+                        }
+                    }
+                } catch (error) {
+                    history.push('/login')
+                }
             }else{
                 history.push('/login')
             }
         }
         fetchData();
+        
         // eslint-disable-next-line
-    }, [])
+    }, [openedRoom])
 
     return (
     <SocketProvider id={user?._id}>
@@ -44,24 +63,22 @@ function HomePage() {
             user ? (
             <StyledHomePage>
                 <div className="page-left">
-                    <SideNav/>
-                </div>
-                <div className="page-right">
                     <Navbar/>
                     <div className="page-body">
                         <Sidebar
                             rooms={rooms}
                             setOpenedRoom={setOpenedRoom}
-                            setListOfMessage={setListOfMessage}
+                            openedRoom={openedRoom}
                         />
                         <ChatBox
                             openedRoom={openedRoom}
                             currentText={currentText}
                             setCurrentText={setCurrentText}
-                            listOfMessage={listOfMessage}
-                            setListOfMessage={setListOfMessage}
                         />
                     </div>
+                </div>
+                <div className="page-right">
+                    <SideNav/>
                 </div>
             </StyledHomePage>
             ) : <Loader fullpage={true}/>
@@ -75,7 +92,7 @@ const StyledHomePage = Styled.div`
     background-color: #fff;
     display:flex;
 
-    .page-right{
+    .page-left{
         flex:1;
 
         .page-body{
@@ -83,6 +100,10 @@ const StyledHomePage = Styled.div`
             height: 100%;
             width: 100%;
         }
+    }
+
+    .page-right{
+        width:24%;
     }
 `
 

@@ -4,12 +4,11 @@ const User = require('../models/user.model')
 const mongoose = require('mongoose')
 const Message = require('../models/message.model')
 
-router.post('/sync', async (req, res) => {
-    const meId = req.body.meId
-    const recipientId = req.body.recipientId
+router.get('/sync/:id', async (req, res) => {
+    const id = req.params.id
 
     // Find room by id
-    const room = await Room.findOne({participants: mongoose.Types.ObjectId(meId), participants: mongoose.Types.ObjectId(recipientId)}).populate('messages')
+    const room = await Room.findById(id).populate('messages')
     
     res.status(200).send(room)
 })

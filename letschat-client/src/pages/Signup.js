@@ -11,11 +11,13 @@ function Login() {
         e.preventDefault();
         const email = e.currentTarget.elements.email.value;
         const password = e.currentTarget.elements.password.value;
+        const username = e.currentTarget.elements.username.value;
 
         console.log(email, password)
-        axios.post('/api/v1/auth/login', {
+        axios.post('/api/v1/auth/register', {
             email: email,
-            password: password
+            password: password,
+            username: username
         }).then((response) => {
             Cookies.set('accToken', response.data.token, { expires: 1 })
             history.push('/')
@@ -25,7 +27,10 @@ function Login() {
     return (
         <StyledLogin>
             <form onSubmit={handleSubmit}>
-                <h2>Login</h2>
+                <h2>Signup</h2>
+                <div className="field">
+                    <input type="text" name="username" id="username" placeholder="Username"/>
+                </div>
                 <div className="field">
                     <input type="email" name="email" id="email" placeholder="Email"/>
                 </div>
@@ -34,7 +39,7 @@ function Login() {
                 </div>
                 <button type="submit">Login</button>
             </form>
-            <p>Don't have an account? Sign In here.</p>
+            <p>Already have an account? Log in here</p>
         </StyledLogin>
     );
 }

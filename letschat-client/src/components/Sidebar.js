@@ -2,62 +2,54 @@ import React, { useContext } from 'react'
 import Styled from '@emotion/styled'
 import ChatPreview from './ChatPreview'
 import { UserContext } from '../contexts/UserContext'
+import { getEmail, getId, getUsername, limitCharacter, getAvatar } from '../utils/user'
 
-function Sidebar({setOpenedRoom, rooms, setListOfMessage}){
+function Sidebar({setOpenedRoom, rooms, openedRoom}){
     const [user] = useContext(UserContext)
 
-    const getEmail = (user, room) => {
-        return room.participants[0].email === user.email ? room.participants[1].email : room.participants[0].email
+    const openedRoomSend = (room, user) => {
+        return {
+            _id: room._id,
+            recipientId: getId(user, room),
+            username: getUsername(user, room),
+            email: getEmail(user, room)}
     }
-    const getUsername = (user, room) => {
-        const uname = room.participants[0].username === user.username ? room.participants[1].username : room.participants[0].username
 
-        // Check if username exist in user contacts
-        if(user?.contacts.some(param => param.username === uname)){
-            return uname
-        }else{
-            return getEmail(user, room);
+    const checkActive = (room) => {
+        if(openedRoom){
+            if(openedRoom._id === room._id){
+                return true
+            }else{
+                return false
+            }
         }
-    }
-    const getId = (user, room) => {
-        return room.participants[0]._id === user._id ? room.participants[1]._id : room.participants[0]._id
-    }
-
-    function limitCharacter(character, max){
-        if(character.length > max) {
-            return `${character.substring(0, max)}...`
-        };
-
-        return character
     }
 
     return(
         <StyledSidebar>
-            <div className="sidebar-header">
-                <button>Add Contact</button>
-            </div>
+            <form className="chat-input">
+                <input type="text" name="text" placeholder="Search contact"/>
+            </form>
             <div className="sidebar-body">
                 {
                     rooms?.map((room, index)=> {
                         return(
                             <span key={index} onClick={() => {
-                                setListOfMessage(user?.rooms.find(x => x._id === room?._id).messages)
-                                setOpenedRoom({_id: room._id, recipientId: getId(user, room), username: getUsername(user, room), email: getEmail(user, room)})}
+                                setOpenedRoom(openedRoomSend(room, user))}
                             }>
-                                <ChatPreview active={false} username={limitCharacter(getUsername(user, room), 12)} preview={'Zupp bro!'}/>
+                                <ChatPreview
+                                    active={checkActive(room)}
+                                    username={limitCharacter(getUsername(user, room), 12)}
+                                    preview={getEmail(user, room)}
+                                    avatar={getAvatar(user, room)}
+                                />
                             </span>
                         )
                     })
                 }
-                {/* {
-                    contacts?.map((contact, index) => {
-                        return(
-                            <span key={index} onClick={() => setOpenedRoom({_id: contact._id, username: contact.username, email: contact.email})}>
-                                <ChatPreview active={contact._id === openedRoom?._id ? true : false} username={contact.username} preview={'Zupp bro!'}/>
-                            </span>
-                        )
-                    })
-                } */}
+            </div>
+            <div className="sidebar-header">
+                <button>Add Contact</button>
             </div>
         </StyledSidebar>
     )
@@ -67,9 +59,39 @@ const StyledSidebar = Styled.div`
     display:flex;
     flex-direction:column;
     flex:0.3;
-    min-width:250px;
+    min-width:300px;
     border-right:1px solid #ddd;
     position:relative;
+
+    .chat-input{
+        display:flex;
+        height:70px;
+        align-items:center;
+        padding: 0 2rem;
+        border-bottom:1px solid #ddd;
+
+        button{
+            border:1px solid #ddd;
+            padding:1rem 1.5rem;
+            background:#3D7EFE;
+            border-radius:3rem;
+            margin-right:.75rem;
+            cursor:pointer;
+            color:#fff;
+
+            &:hover{
+                border:1px solid #999;
+            }
+        }
+
+        input{
+            flex-grow:1;
+            height:60%;
+            border-radius:3rem;
+            border:1px solid #ddd;
+            padding:0 1rem;
+        }
+    }
 
     .sidebar-header{
         border-bottom:1px solid #ddd;

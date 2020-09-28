@@ -33,4 +33,18 @@ router.post('/add',  async (req, res) => {
     res.status(201).send(newRoom);
 })
 
+router.post('/remove',  async (req, res) => {
+    const contactId = req.body.contactId
+    const meId = req.body.meId
+
+    // Find me
+    const me = await User.findById(meId)
+
+    // Remove from contact
+    await me.contacts.pull(contactId);
+    await me.save();
+
+    res.status(201).send(me.contacts);
+})
+
 module.exports = router;

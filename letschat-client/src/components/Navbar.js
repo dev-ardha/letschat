@@ -1,14 +1,23 @@
-import React, { useContext } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import Styled from '@emotion/styled'
 import { UserContext } from '../contexts/UserContext'
+import { useSocket } from '../contexts/SocketContext'
 
 function Navbar(){
     const [user] = useContext(UserContext)
+    const socket = useSocket()
+    const [count, setCount] = useState()
+
+    useEffect(() => {
+        socket.on('online', count => {
+            setCount(count)
+        })
+        
+    }, [socket])
 
     return(
         <StyledNavbar>
-            <div className="navbar-left"></div>
-            <input type="text" className="navbar-search" placeholder="Search"/>
+            <div className="navbar-left">{count} user online</div>
             <div className="navbar-right"><p>{user.username}</p></div>
         </StyledNavbar>
     )
@@ -20,20 +29,11 @@ const StyledNavbar = Styled.div`
     height:45px;
     border-bottom:1px solid #ddd;
     padding:0 2rem;
+    align-items:center;
 
     .navbar-left{
         display:flex;
         flex: 1 0 0%;
-    }
-
-    .navbar-search{
-        height:30px;
-        width:250px;
-        margin:auto;
-        background:#f9f9f9;
-        border:1px solid #ddd;
-        border-radius:4px;
-        text-align:center;
     }
 
     .navbar-right{

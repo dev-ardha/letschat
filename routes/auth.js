@@ -2,21 +2,6 @@ const router = require('express').Router();
 const argon2 = require('argon2');
 const User = require('../models/user.model')
 const jwt = require('jsonwebtoken');
-const Room = require('../models/room.model');
-
-router.get('/users', async (req, res)=> {
-    try {
-        const users = await User.find()
-
-        if(users){
-            res.status(400)
-        }
-
-        res.status(200).send(users)
-    } catch (err) {
-        
-    }
-})
 
 router.get('/me/:id', async(req, res)=> {
     const meId = req.params.id;
@@ -29,7 +14,7 @@ router.get('/me/:id', async(req, res)=> {
     }).populate('contacts')
 
     if(me){
-        res.status(200).send(me)
+        res.status(200).send({user: me, secret: process.env.ACCESS_TOKEN_SECRET})
     }
 })
 
@@ -52,7 +37,11 @@ router.post('/register',  async (req, res) => {
             password: hashedPassword,
         });
 
-        res.status(201).send(newUser)
+        const accessToken = jwt.sign({ id: newUser._id }, process.env.ACCESS_TOKEN_SECRET, {
+            expiresIn: '1d',
+        });
+
+        res.status(200).send({msg: "Authentication success", token: accessToken})
 
     } catch (err) {
         res.status(500)
@@ -65,12 +54,12 @@ router.post('/login', async (req, res) => {
     const hashedPassword = req.body.password;
 
     try {
-        const user = await User.findOne({email})
+        const user = await User.findOne({email: email})
         if(!user){
             res.status(400).send({msg: "User not found"})
         }
 
-        const valid = await bcrypt.compare(hashedPassword, user.password)
+        const valid = await argon2.verify(user.password, hashedPassword)
 
         if(!valid){
             res.status(401).send({msg:"Anauthorized"})
@@ -80,14 +69,11 @@ router.post('/login', async (req, res) => {
             expiresIn: '1d',
         });
 
-        res.cookie('jwtId', accessToken, { maxAge: 1000*60*60*24, httpOnly: true });
         res.status(200).send({msg: "Authentication success", token: accessToken})
 
     } catch (error) {
         res.status(500)
     }
-
-    
 })
 
 module.exports = router;

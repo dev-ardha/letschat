@@ -1,14 +1,26 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import Styled from '@emotion/styled'
+import { UserContext } from '../contexts/UserContext'
 
-function ChatHeader({username, email}){
+function ChatHeader({username, email, typingMessage, recipientId}){
+    const [user] = useContext(UserContext)
+
+    const checkIsOnContact = () => {
+        if(user?.contacts.filter(u => u._id === recipientId).length > 0){
+            return ''
+        }else{
+            return <button className="add">Add Contact</button>
+        }
+    }
+
     return(
         <StyledChatHeader>
             <div className="header-left">
                 <h2 className="user-name">{username}</h2>
-                <h3 className="user-email">{email}</h3>
+                <h3 className="user-email">{email} {typingMessage ? <span>is typing...</span> : ''}</h3>
             </div>
             <div className="heder-right">
+                { checkIsOnContact()}
                 <button>User Info</button>
             </div>
         </StyledChatHeader>
@@ -25,6 +37,10 @@ const StyledChatHeader = Styled.div`
     .header-left{
         h2, h3{
             margin:0;
+
+            span{
+                color:#a4a4af;
+            }
         }
 
         .user-name{
@@ -40,6 +56,10 @@ const StyledChatHeader = Styled.div`
     .heder-right{
         display:flex;
         align-items:center;
+
+        .add{
+            margin-right:.5rem;
+        }
 
         button{
             border:1px solid #ddd;
