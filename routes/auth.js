@@ -28,7 +28,7 @@ router.post('/register',  async (req, res) => {
 
         const user = await User.findOne({username})
         if(user){
-            res.status(400).send({msg: "User has already exist"})
+            res.status(400).send({msg: "User has already exist."})
         }
 
         const newUser = await User.create({
@@ -41,10 +41,10 @@ router.post('/register',  async (req, res) => {
             expiresIn: '1d',
         });
 
-        res.status(200).send({msg: "Authentication success", token: accessToken})
+        res.status(200).send({msg: "Authentication success.", token: accessToken})
 
     } catch (err) {
-        res.status(500)
+        res.status(500).send({msg: "There's a problem. Please try again."})
     }
     
 })
@@ -56,23 +56,23 @@ router.post('/login', async (req, res) => {
     try {
         const user = await User.findOne({email: email})
         if(!user){
-            res.status(400).send({msg: "User not found"})
+            res.status(400).send({msg: "User not found."})
         }
 
         const valid = await argon2.verify(user.password, hashedPassword)
 
         if(!valid){
-            res.status(401).send({msg:"Anauthorized"})
+            res.status(401).send({msg:"Email or password invalid."})
         }
 
         const accessToken = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN_SECRET, {
             expiresIn: '1d',
         });
 
-        res.status(200).send({msg: "Authentication success", token: accessToken})
+        res.status(200).send({msg: "Authentication success.", token: accessToken})
 
     } catch (error) {
-        res.status(500)
+        res.status(500).send({msg: "There's a problem. Please try again."})
     }
 })
 

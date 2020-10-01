@@ -1,17 +1,35 @@
-import React, { useContext } from 'react'
+import React, { useContext, useState, useEffect } from 'react'
 import Styled from '@emotion/styled'
 import ChatPreview from './ChatPreview'
 import { UserContext } from '../contexts/UserContext'
 import { getEmail, getId, getUsername, limitCharacter, getAvatar } from '../utils/user'
+import axios from '../utils/axios'
+import ModalInput from './ModalInput'
+import ModalAlert from './ModalAlert'
+import { ContactContext } from '../contexts/ContactContext'
 
 function Sidebar({setOpenedRoom, rooms, openedRoom}){
     const [user] = useContext(UserContext)
+    const [contacts, setContacts] = useContext(ContactContext);
+
+    const [roomList, setRoomList] = useState(rooms)
+    const [emailInput, setEmailInput] = useState();
+
+    useEffect(() => {
+        setContacts(user?.contacts);
+
+    // eslint-disable-next-line
+    }, [user])
+    
+    const [modalOpen, setModalOpen] = useState(false);
+    const [alertOpen, setAlertOpen] = useState(false);
+    const [alertMessage, setAlertMessage] = useState()
 
     const openedRoomSend = (room, user) => {
         return {
             _id: room._id,
             recipientId: getId(user, room),
-            username: getUsername(user, room),
+            username: getUsername(user, room, contacts),
             email: getEmail(user, room)}
     }
 
@@ -25,31 +43,73 @@ function Sidebar({setOpenedRoom, rooms, openedRoom}){
         }
     }
 
+    const addNewContact = () => {
+        const email = emailInput;
+        setModalOpen(false)
+
+        if(email){
+            axios.post('/api/v1/contact/add', {
+                meId:user._id,
+                recipient: email
+            }).then(response => {
+                setEmailInput('');
+
+                // If axios didn't get the data
+                if(!response.data){
+                    setAlertMessage("There's a problem adding the user to your contact list");
+                    setAlertOpen(true);
+                }
+
+                // If axios get the data
+                if(response.data){
+                    setContacts([...contacts, response.data.contact]);
+                    if(response.data.room){
+                        setRoomList([...roomList, response.data.room]);
+                    }
+                    setAlertMessage('User has been successfully added to your contact list.');
+                    setAlertOpen(true);
+                }
+            }).catch(() => {
+                setEmailInput('');
+                setAlertMessage("There's a problem adding the user to your contact list");
+                setAlertOpen(true);
+            })
+        }
+    }
+
+
     return(
         <StyledSidebar>
+            { modalOpen ? <ModalInput inputHandler={setEmailInput} setModalOpen={setModalOpen} actionHandler={addNewContact}/> : '' }
+            { alertOpen ? <ModalAlert setAlertMessage={setAlertMessage} message={alertMessage} setModalOpen={setAlertOpen}/> : '' }
             <form className="chat-input">
                 <input type="text" name="text" placeholder="Search contact"/>
             </form>
             <div className="sidebar-body">
                 {
-                    rooms?.map((room, index)=> {
-                        return(
-                            <span key={index} onClick={() => {
-                                setOpenedRoom(openedRoomSend(room, user))}
-                            }>
-                                <ChatPreview
-                                    active={checkActive(room)}
-                                    username={limitCharacter(getUsername(user, room), 12)}
-                                    preview={getEmail(user, room)}
-                                    avatar={getAvatar(user, room)}
-                                />
-                            </span>
-                        )
+                    roomList?.map((room, index)=> {
+                        // Hiding empty room chat
+                        if(room.messages.length > 0){
+                            return(
+                                <span key={index} onClick={() => {
+                                    setOpenedRoom(openedRoomSend(room, user))}
+                                }>
+                                    <ChatPreview
+                                        active={checkActive(room)}
+                                        preview={getEmail(user, room)}
+                                        username={limitCharacter(getUsername(user, room, contacts), 13)}
+                                        avatar={getAvatar(user, room)}
+                                    />
+                                </span>
+                            )
+                        }else{
+                            return ''
+                        }
                     })
                 }
             </div>
             <div className="sidebar-header">
-                <button>Add Contact</button>
+                <button type="submit" onClick={() => setModalOpen(true)}>Add Contact</button>
             </div>
         </StyledSidebar>
     )

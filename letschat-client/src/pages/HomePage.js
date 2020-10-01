@@ -14,13 +14,14 @@ import Cookies from 'js-cookie';
 
 function HomePage() {
     // Context
-    const [user, setUser] = useContext(UserContext)
+    const [user, setUser] = useContext(UserContext);
 
-    const [openedRoom, setOpenedRoom] = useState()
+    const [openedRoom, setOpenedRoom] = useState();
     const rooms = user?.rooms;
-    const [currentText, setCurrentText] = useState()
+    const [currentText, setCurrentText] = useState();
 
-    const history = useHistory()
+    console.log(openedRoom)
+    const history = useHistory();
 
     const me = window.localStorage.getItem('userId')
     if(!me){

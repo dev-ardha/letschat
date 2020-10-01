@@ -6,12 +6,12 @@ import {format} from 'date-fns'
 
 function Message({position, message, index, listOfMessage, timestamp, messageBeforeThis, messageObject}){
 
-    const isLastMessage = listOfMessage.length -1 === index;
+    const isLastMessage = listOfMessage.length - 1 === index;
     const lastMessageRef = useRef();
 
     useEffect(() => {
         if(lastMessageRef.current){
-            lastMessageRef.current.scrollIntoView({behavior: 'smooth'})
+            lastMessageRef.current.scrollIntoView({behavior: "smooth"})
         }
     })
 

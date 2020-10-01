@@ -41,7 +41,7 @@ function ChatBox({openedRoom, setCurrentText, currentText}){
                 setListOfMessage(messages)
             })
         }
-    }, [openedRoom])
+    }, [openedRoom, socket])
 
     // Get the realtime data from the server when user have a new message
     useEffect(() => {

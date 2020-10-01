@@ -1,20 +1,56 @@
-import React, { useContext } from 'react'
+import React, { useContext, useState } from 'react'
 import Styled from '@emotion/styled'
 import { UserContext } from '../contexts/UserContext'
+import axios from '../utils/axios'
+import ModalAlert from './ModalAlert'
+import { ContactContext } from '../contexts/ContactContext'
 
 function ChatHeader({username, email, typingMessage, recipientId}){
-    const [user] = useContext(UserContext)
+    const [user] = useContext(UserContext);
+    const [contacts, setContacts] = useContext(ContactContext);
+
+    const [alertOpen, setAlertOpen] = useState(false);
+    const [alertMessage, setAlertMessage] = useState();
+
+    const addNewContact = () => {
+        if(email){
+            axios.post('/api/v1/contact/add', {
+                meId:user._id,
+                recipient: email
+            }).then(response => {
+
+                // If axios didn't get any data
+                if(!response.data){
+                    setAlertMessage("There's a problem adding the user to your contact list");
+                    setAlertOpen(true);
+                }
+
+                // If axios successfully get the data
+                if(response.data){
+                    setContacts([...contacts, response.data.contact]);
+                    setAlertMessage('User has been successfully added to your contact list.');
+                    setAlertOpen(true);
+                }
+            }).catch(() => {
+                setAlertMessage("There's a problem adding the user to your contact list");
+                setAlertOpen(true);
+            })
+        }
+    }
 
     const checkIsOnContact = () => {
         if(user?.contacts.filter(u => u._id === recipientId).length > 0){
             return ''
         }else{
-            return <button className="add">Add Contact</button>
+            return <button className="add" onClick={addNewContact}>Add Contact</button>
         }
     }
 
     return(
         <StyledChatHeader>
+            {
+                alertOpen ? <ModalAlert setAlertMessage={setAlertMessage} message={alertMessage} setModalOpen={setAlertOpen}/> : ''
+            }
             <div className="header-left">
                 <h2 className="user-name">{username}</h2>
                 <h3 className="user-email">{email} {typingMessage ? <span>is typing...</span> : ''}</h3>

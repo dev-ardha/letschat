@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Styled from '@emotion/styled'
 import axios from '../utils/axios';
 import { useHistory } from 'react-router-dom'
@@ -6,19 +6,30 @@ import Cookies from 'js-cookie'
 
 function Login() {
     const history = useHistory()
+    const [error, setError] = useState('')
+    const [loading, setLoading] = useState(false)
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        setError('')
+        setLoading(true)
         const email = e.currentTarget.elements.email.value;
         const password = e.currentTarget.elements.password.value;
 
-        console.log(email, password)
         axios.post('/api/v1/auth/login', {
             email: email,
             password: password
-        }).then((response) => {
+        }).then(response => {
+            setLoading(false)
             Cookies.set('accToken', response.data.token, { expires: 1 })
             history.push('/')
+        }).catch(err => {
+            setLoading(false)
+            if(err.response){
+                setError(err.response.data.msg)
+            }else{
+                setError('Unknown error. Please try to reload the page.')
+            }
         })
     }
 
@@ -26,13 +37,14 @@ function Login() {
         <StyledLogin>
             <form onSubmit={handleSubmit}>
                 <h2>Login</h2>
+                { error ? <span className="error-message">{error}</span> : '' }
                 <div className="field">
                     <input type="email" name="email" id="email" placeholder="Email"/>
                 </div>
                 <div className="field">
                     <input type="password" name="password" id="password" placeholder="Password"/>
                 </div>
-                <button type="submit">Login</button>
+                <button type="submit" disabled={loading ? true : false}>Login</button>
             </form>
             <p>Don't have an account? Sign In here.</p>
         </StyledLogin>
@@ -53,6 +65,19 @@ const StyledLogin = Styled.div`
         align-items:center;
         justify-content:center;
         padding: 2rem 1rem 1rem 1rem;
+
+        .error-message{
+            padding: .6rem;
+            background: #ffdddd;
+            margin-bottom: 1rem;
+            display: flex;
+            width: 280px;
+            justify-content: center;
+            align-items: center;
+            color: red;
+            border: 1px solid red;
+            text-align:center;
+        }
 
         h2{
             text-align:center;
@@ -83,10 +108,16 @@ const StyledLogin = Styled.div`
         color:#fff;
         border:none;
         cursor:pointer;
-
+        
         &:hover{
             background:#379fff;
         }
+
+        &:disabled{
+            background: #ddd;
+            cursor: not-allowed;
+        }
+
     }
 `
 
