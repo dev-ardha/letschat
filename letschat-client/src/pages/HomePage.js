@@ -5,7 +5,7 @@ import ChatBox from '../components/ChatBox'
 import Navbar from '../components/Navbar'
 import SideNav from '../components/SideNav'
 import Loader from '../components/Loader';
-import axios from '../utils/axios'
+import axios from 'axios'
 import { useHistory } from 'react-router-dom'
 import { SocketProvider } from '../contexts/SocketContext'
 import jwt from 'jsonwebtoken';

@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import Styled from '@emotion/styled'
 import { connect } from 'react-redux'
-import axios from '../utils/axios'
+import axios from 'axios'
 import ModalAlert from './ModalAlert'
 import UserInfo from './UserInfo'
 import { removeFromContact, addToContact } from '../redux/actions/contactActions'

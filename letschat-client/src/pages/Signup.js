@@ -1,6 +1,6 @@
 import React from 'react';
 import Styled from '@emotion/styled'
-import axios from '../utils/axios';
+import axios from 'axios';
 import { useHistory } from 'react-router-dom'
 import Cookies from 'js-cookie'
 

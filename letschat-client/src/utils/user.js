@@ -1,4 +1,4 @@
-import axios from './axios'
+import axios from 'axios'
 
 export const getEmail = (user, room) => {
     return room.participants[0].email === user.email ? room.participants[1].email : room.participants[0].email
