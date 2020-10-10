@@ -1,12 +1,14 @@
 {
   "name": "letschat",
   "version": "1.0.0",
-  "description": "",
+  "description": "Realtime chat application powered by MERN Stack and Socket.io",
   "main": "server.js",
   "scripts": {
+    "client-install": "npm install --prefix letschat-client",
     "server": "nodemon server.js",
     "client": "npm start --prefix letschat-client",
-    "dev": " concurrently \"npm run server\" \"npm run client\""
+    "dev": " concurrently \"npm run server\" \"npm run client\"",
+    "heroku-postbuild": "NPM_CONFIG_PRODUCTION=false npm install --prefix letschat-client && npm run build --prefix letschat-client"
   },
   "keywords": [],
   "author": "",
@@ -24,5 +26,9 @@
   },
   "devDependencies": {
     "nodemon": "^2.0.4"
+  },
+  "engines": {
+    "node": "10.16.x",
+    "npm": "6.x"
   }
 }

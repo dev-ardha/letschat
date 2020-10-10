@@ -1,17 +1,12 @@
-import React, { useState } from 'react'
+import React from 'react'
 import Styled from '@emotion/styled'
 import {HiUser} from 'react-icons/hi'
 import { connect } from 'react-redux'
 import Settings from './Settings'
 
 function SideNav({user}){
-    const [settingOpen, setSettingOpen] = useState(false)
-
     return(
         <StyledSideNav>
-            <span className="setting">
-                <button onClick={() => setSettingOpen(!settingOpen)}>Settings</button>
-            </span>
             <div className="user-details">
                 <div className="user-photo">
                     {
@@ -28,7 +23,7 @@ function SideNav({user}){
                     alt="Buy Me A Coffee"/>
             </a>
             <p>Copyright 2020 - LetsChat</p>
-            <Settings open={settingOpen} setOpen={setSettingOpen}/>
+            <Settings/>
         </StyledSideNav>
     )
 }

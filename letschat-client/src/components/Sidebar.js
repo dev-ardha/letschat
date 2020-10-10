@@ -7,6 +7,8 @@ import axios from '../utils/axios'
 import ModalInput from './ModalInput'
 import ModalAlert from './ModalAlert'
 import { loadContact } from '../redux/actions/contactActions'
+import ModalContacts from './ModalContacts'
+import { HiChatAlt2, HiUserAdd, HiViewGrid } from 'react-icons/hi'
 
 function Sidebar({setOpenedRoom, rooms, openedRoom, user, loadContact, contacts, roomObject}){
     const [roomList, setRoomList] = useState(rooms)
@@ -20,6 +22,7 @@ function Sidebar({setOpenedRoom, rooms, openedRoom, user, loadContact, contacts,
     
     const [modalOpen, setModalOpen] = useState(false);
     const [alertOpen, setAlertOpen] = useState(false);
+    const [contactOpen, setContactOpen] = useState(false)
     const [alertMessage, setAlertMessage] = useState()
 
     const openedRoomSend = (room, user) => {
@@ -79,6 +82,7 @@ function Sidebar({setOpenedRoom, rooms, openedRoom, user, loadContact, contacts,
 
     return(
         <StyledSidebar>
+            { contactOpen ? <ModalContacts setModalOpen={setContactOpen} roomList={roomList} setOpenedRoom={setOpenedRoom}/> : '' }
             { modalOpen ? <ModalInput inputHandler={setEmailInput} setModalOpen={setModalOpen} actionHandler={addNewContact}/> : '' }
             { alertOpen ? <ModalAlert setAlertMessage={setAlertMessage} message={alertMessage} setModalOpen={setAlertOpen}/> : '' }
             {/* <form className="chat-input">
@@ -87,30 +91,39 @@ function Sidebar({setOpenedRoom, rooms, openedRoom, user, loadContact, contacts,
             <div className="sidebar-header">
                 <h1>LetsChat</h1>
             </div>
+            <div className="sidebar-nav">
+                <span className="add" onClick={() => setModalOpen(true)}><HiUserAdd/></span>
+                <span className="contacts" onClick={() => setContactOpen(true)}><HiChatAlt2/></span>
+                <span className="settings" ><HiViewGrid/></span>
+            </div>
             <div className="sidebar-body">
                 {
                     roomList?.map((room, index)=> {
                         let lastIndex = roomObject?.[room._id].length - 1;
                         const filter = roomObject?.[room._id].filter(e => e.read === false && e.recipientId === user._id)
-                        return(
-                            <span key={index} onClick={() => {
-                                setOpenedRoom(openedRoomSend(room, user))}
-                            }>
-                                <ChatPreview
-                                    active={checkActive(room)}
-                                    preview={getEmail(user, room)}
-                                    username={limitCharacter(getUsername(user, room, contacts), 13)}
-                                    avatar={getAvatar(user, room)}
-                                    lastMessage={roomObject?.[room._id][lastIndex]}
-                                    messageCount={filter?.length}
-                                />
-                            </span>
-                        )
+                        if(room.messages.length){
+                            return(
+                                <span key={index} onClick={() => {
+                                    setOpenedRoom(openedRoomSend(room, user))}
+                                }>
+                                    <ChatPreview
+                                        active={checkActive(room)}
+                                        preview={getEmail(user, room)}
+                                        username={limitCharacter(getUsername(user, room, contacts), 13)}
+                                        avatar={getAvatar(user, room)}
+                                        lastMessage={roomObject?.[room._id][lastIndex]}
+                                        messageCount={filter?.length}
+                                    />
+                                </span>
+                            )
+                        }else{
+                            return ''
+                        }
                     })
                 }
             </div>
             <div className="sidebar-footer">
-                <button type="submit" onClick={() => setModalOpen(true)}>Add Contact</button>
+              
             </div>
         </StyledSidebar>
     )
@@ -123,6 +136,93 @@ const StyledSidebar = Styled.div`
     min-width:320px;
     border-right:1px solid #ddd;
     position:relative;
+
+    .sidebar-nav{
+        padding:.75rem 1rem;
+        display:flex;
+        justify-content:space-evenly;
+        font-size:1.75rem;
+        border-bottom:1px solid #ddd;
+
+        span{
+            cursor:pointer;
+            color:#bbb;
+            padding: 6px;
+            border-radius: 50%;
+            display: flex;
+            position:relative;
+
+            &:hover{
+                color:#1990ff;
+                background: #f9f9f9;
+            }
+        }
+
+        .contacts{
+            &::before{
+                opacity:0;
+                content: "Contacts";
+                display: block;
+                position: absolute;
+                padding: 8px 11px;
+                background: #333;
+                box-shadow: 0 1px 3px rgb(0,0,0,0.2);
+                font-size: 14px;
+                bottom: -40px;
+                left: -19px;
+                color: #fff;
+                border-radius: 4px;
+                z-index: 1;
+            }
+        }
+
+        .settings{
+            &::before{
+                opacity:0;
+                content: "Settings";
+                display: block;
+                position: absolute;
+                padding: 8px 11px;
+                background: #333;
+                box-shadow: 0 1px 3px rgb(0,0,0,0.2);
+                font-size: 14px;
+                bottom: -40px;
+                left: -18px;
+                color: #fff;
+                border-radius: 4px;
+                z-index: 1;
+            }
+        }
+
+        .add{
+            &::before{
+                opacity:0;
+                content: "Add Contact";
+                display: block;
+                position: absolute;
+                padding: 8px 11px;
+                background: #333;
+                box-shadow: 0 1px 3px rgb(0,0,0,0.2);
+                font-size: 14px;
+                bottom: -40px;
+                left: -33px;
+                color: #fff;
+                border-radius: 4px;
+                min-width: 78px;
+                z-index: 1;
+            }
+        }
+
+        .contacts::before, .settings::before, .add::before{
+            transition:all .1s ease-in-out;
+        }
+
+        .contacts:hover, .settings:hover, .add:hover{
+            &::before{
+                opacity:1;
+            }
+        }
+    }
 
     .sidebar-header{
         min-height:79px;

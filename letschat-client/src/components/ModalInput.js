@@ -10,7 +10,7 @@ function ModalInput({setModalOpen, inputHandler, actionHandler}){
                     <p>Enter your friend's email</p>
                     <input placeholder="Email" onChange={(e) => inputHandler(e.target.value)}/>
                     <div className="buttons">
-                        <button className="left" onClick={actionHandler}>OK</button>
+                        <button className="left" onClick={actionHandler}>Add</button>
                         <button className="right" onClick={() => {setModalOpen(false); inputHandler('')}}>Cancel</button>
                     </div>
                 </div>

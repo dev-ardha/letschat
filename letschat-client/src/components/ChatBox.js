@@ -49,7 +49,7 @@ function ChatBox({openedRoom, setCurrentText, currentText, user, rooms, updateRo
     useEffect(() => {
         if(openedRoom){
             readMessages(user._id, openedRoom._id).then((messages) => {
-                updateRoom({messages: messages, roomId: messages[0].roomId})
+                updateRoom({messages: messages, roomId: messages[0]?.roomId})
             })
         }
         // eslint-disable-next-line
