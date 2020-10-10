@@ -1,15 +1,16 @@
-import React, { useContext } from 'react'
+import React, { useState } from 'react'
 import Styled from '@emotion/styled'
 import {HiUser} from 'react-icons/hi'
-import { UserContext } from '../contexts/UserContext'
+import { connect } from 'react-redux'
+import Settings from './Settings'
 
-function SideNav(){
-    const [user] = useContext(UserContext)
+function SideNav({user}){
+    const [settingOpen, setSettingOpen] = useState(false)
 
     return(
         <StyledSideNav>
             <span className="setting">
-                <button>Settings</button>
+                <button onClick={() => setSettingOpen(!settingOpen)}>Settings</button>
             </span>
             <div className="user-details">
                 <div className="user-photo">
@@ -27,6 +28,7 @@ function SideNav(){
                     alt="Buy Me A Coffee"/>
             </a>
             <p>Copyright 2020 - LetsChat</p>
+            <Settings open={settingOpen} setOpen={setSettingOpen}/>
         </StyledSideNav>
     )
 }
@@ -46,14 +48,15 @@ const StyledSideNav = Styled.div`
         top:1rem;
         
         button{
-            border:1px solid #ddd;
-            padding:.5rem 1rem;
-            background:#f9f9f9;
-            border-radius:.5rem;
-            cursor:pointer;
+            border: none;
+            padding: .75rem 1rem;
+            background: #1990ff;
+            border-radius: .5rem;
+            cursor: pointer;
+            color: #fff;
 
             &:hover{
-                border:1px solid #999;
+                background:#4ca9ff;
             }
         }
     }
@@ -75,6 +78,29 @@ const StyledSideNav = Styled.div`
             justify-content: center;
             align-items: center;
             object-fit:cover;
+            cursor:pointer;
+            overflow:hidden;
+            position:relative;
+
+            &::before{
+                content: "Edit";
+                text-align:center;
+                font-size: 12px;
+                padding-top: 8px;
+                font-weight: 600;
+                display:none;
+                bottom:-5px;
+                width:100%;
+                height:30px;
+                background:#00000070;
+                position:absolute;
+            }  
+
+            &:hover{
+                &::before{
+                    display:block;
+                }
+            }
 
             img{
                 width:100%;
@@ -100,4 +126,8 @@ const StyledSideNav = Styled.div`
     }
 `
 
-export default SideNav;
+const mapStateToProps = state => ({
+    user: state.user.user
+})
+
+export default connect(mapStateToProps )(SideNav);

@@ -1,8 +1,10 @@
 import React from 'react'
 import Styled from '@emotion/styled'
 import { HiUser } from 'react-icons/hi'
+import { limitCharacter } from '../utils/user'
+import { getTimeOnly } from '../utils/date'
 
-function ChatPreview({active, username, preview, avatar}){
+function ChatPreview({active, username, avatar, lastMessage, messageCount}){
     return(
         <StyledChatPreview active={active}>
             <div className="avatar">
@@ -10,7 +12,18 @@ function ChatPreview({active, username, preview, avatar}){
             </div>
             <div className="chat-info">
                 <h2>{username}</h2>
-                <p>{preview}</p>
+                <p>{lastMessage ? limitCharacter(lastMessage.message, 28) : ''}</p>
+            </div>
+            <div className="last-message">
+                {
+                    lastMessage ? (
+                        <>
+                            <span className="last-timestamp">{getTimeOnly(lastMessage.createdAt)}</span>
+                            { messageCount ? <span className="message-count">{messageCount}</span> : '' }
+                        </>
+                    ) : ''
+                }
+                
             </div>
         </StyledChatPreview>
     )
@@ -28,6 +41,31 @@ const StyledChatPreview = Styled.div`
 
     &:hover{
         background:#f9f9f9;
+    }
+
+    .last-message{
+        position: absolute;
+        right: 1rem;
+        top:20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .last-timestamp{
+        font-size: .9rem;
+        margin-bottom: 6px;
+        color:#666;
+    }
+    .message-count{
+        background: #1990ff;
+        color: #fff;
+        border-radius: 50%;
+        font-size:.8rem;
+        padding: 4px;
+        min-width: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
     
     .avatar{
@@ -51,7 +89,6 @@ const StyledChatPreview = Styled.div`
 
     .chat-info{
         margin-left:1rem;
-        flex:1;
         margin-top: 5px;
 
         h2{

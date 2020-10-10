@@ -1,16 +1,15 @@
-import React, { useContext, useState } from 'react'
+import React, { useState } from 'react'
 import Styled from '@emotion/styled'
-import { UserContext } from '../contexts/UserContext'
+import { connect } from 'react-redux'
 import axios from '../utils/axios'
 import ModalAlert from './ModalAlert'
-import { ContactContext } from '../contexts/ContactContext'
+import UserInfo from './UserInfo'
+import { removeFromContact, addToContact } from '../redux/actions/contactActions'
 
-function ChatHeader({username, email, typingMessage, recipientId}){
-    const [user] = useContext(UserContext);
-    const [contacts, setContacts] = useContext(ContactContext);
-
+function ChatHeader({username, email, typingMessage, recipientId, photo, user, contacts, removeFromContact, addToContact}){
     const [alertOpen, setAlertOpen] = useState(false);
     const [alertMessage, setAlertMessage] = useState();
+    const [infoOpen, setInfoOpen] = useState(false)
 
     const addNewContact = () => {
         if(email){
@@ -27,7 +26,7 @@ function ChatHeader({username, email, typingMessage, recipientId}){
 
                 // If axios successfully get the data
                 if(response.data){
-                    setContacts([...contacts, response.data.contact]);
+                    addToContact([...contacts, response.data.contact]);
                     setAlertMessage('User has been successfully added to your contact list.');
                     setAlertOpen(true);
                 }
@@ -38,26 +37,51 @@ function ChatHeader({username, email, typingMessage, recipientId}){
         }
     }
 
-    const checkIsOnContact = () => {
-        if(user?.contacts.filter(u => u._id === recipientId).length > 0){
+    const checkIsOnContact = (contacts) => {
+        if(contacts.filter(u => u._id === recipientId).length > 0){
             return ''
         }else{
             return <button className="add" onClick={addNewContact}>Add Contact</button>
         }
     }
 
+    const deleteContact = () => {
+        if(email){
+            axios.post('/api/v1/contact/remove', {
+                contactId: recipientId,
+                meId: user._id
+            }).then((response) => {
+
+                // If axios didn't get any data
+                if(!response.data){
+                    setAlertMessage("There's a problem deleting the user from your contact list");
+                    setAlertOpen(true);
+                }
+
+                // If axios successfully get the data
+                if(response.data){
+                    removeFromContact(response.data.contact);
+                    setAlertMessage('User has been successfully deleted from your contact list.');
+                    setAlertOpen(true);
+                }
+            }).catch(() => {
+                setAlertMessage("There's a problem adding the user to your contact list");
+                setAlertOpen(true);
+            })
+        }
+    }
+
     return(
         <StyledChatHeader>
-            {
-                alertOpen ? <ModalAlert setAlertMessage={setAlertMessage} message={alertMessage} setModalOpen={setAlertOpen}/> : ''
-            }
+            { alertOpen ? <ModalAlert setAlertMessage={setAlertMessage} message={alertMessage} setModalOpen={setAlertOpen}/> : '' }
+            <UserInfo deleteContact={deleteContact} open={infoOpen} setOpen={setInfoOpen} username={username} email={email} photo={photo}/>
             <div className="header-left">
                 <h2 className="user-name">{username}</h2>
                 <h3 className="user-email">{email} {typingMessage ? <span>is typing...</span> : ''}</h3>
             </div>
             <div className="heder-right">
-                { checkIsOnContact()}
-                <button>User Info</button>
+                { checkIsOnContact(contacts)}
+                <button onClick={() => setInfoOpen(!infoOpen)}>User Info</button>
             </div>
         </StyledChatHeader>
     )
@@ -66,9 +90,11 @@ function ChatHeader({username, email, typingMessage, recipientId}){
 const StyledChatHeader = Styled.div`
     padding:1rem 2rem;
     border-bottom:1px solid #ddd;
-    background:#f9f9f9;
+    background:#fff;
     display:flex;
     justify-content:space-between;
+    min-height:79px;
+    box-shadow:0 2px 4px #0000000d;
 
     .header-left{
         h2, h3{
@@ -111,4 +137,14 @@ const StyledChatHeader = Styled.div`
     }
 `
 
-export default ChatHeader;
+const mapDispatchToProps = dispatch => ({
+    removeFromContact: (e) => dispatch(removeFromContact(e)),
+    addToContact: (e) => dispatch(addToContact(e))
+});
+
+const mapStateToProps = state => ({
+    user: state.user.user,
+    contacts: state.contacts.contacts
+})
+
+export default connect(mapStateToProps, mapDispatchToProps)(ChatHeader);

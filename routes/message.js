@@ -26,6 +26,25 @@ router.post('/all', async (req, res) => {
     })
 })
 
+router.post('/read', async (req, res) => {
+    const meId = req.body.meId
+    const roomId = req.body.roomId
+
+    // Find room
+    Message.updateMany({ roomId: roomId, recipientId: meId, read: false }, { read: true })
+    .then(async (messages) => {
+        if(messages){
+            const room = await Room.findById(roomId).populate('messages')
+
+            if(room){
+                return res.status(200).send(room.messages)
+            }
+        }
+
+        res.status(400).send({msg: "Failed to read messages"})
+    })
+})
+
 router.post('/new',  async (req, res) => {
     const recipientId = req.body.recipientId
     const meId = req.body.meId

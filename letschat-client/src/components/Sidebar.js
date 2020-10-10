@@ -1,22 +1,19 @@
-import React, { useContext, useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import Styled from '@emotion/styled'
 import ChatPreview from './ChatPreview'
-import { UserContext } from '../contexts/UserContext'
+import { connect } from 'react-redux'
 import { getEmail, getId, getUsername, limitCharacter, getAvatar } from '../utils/user'
 import axios from '../utils/axios'
 import ModalInput from './ModalInput'
 import ModalAlert from './ModalAlert'
-import { ContactContext } from '../contexts/ContactContext'
+import { loadContact } from '../redux/actions/contactActions'
 
-function Sidebar({setOpenedRoom, rooms, openedRoom}){
-    const [user] = useContext(UserContext)
-    const [contacts, setContacts] = useContext(ContactContext);
-
+function Sidebar({setOpenedRoom, rooms, openedRoom, user, loadContact, contacts, roomObject}){
     const [roomList, setRoomList] = useState(rooms)
     const [emailInput, setEmailInput] = useState();
 
     useEffect(() => {
-        setContacts(user?.contacts);
+        loadContact(user?.contacts)
 
     // eslint-disable-next-line
     }, [user])
@@ -30,7 +27,9 @@ function Sidebar({setOpenedRoom, rooms, openedRoom}){
             _id: room._id,
             recipientId: getId(user, room),
             username: getUsername(user, room, contacts),
-            email: getEmail(user, room)}
+            photo: getAvatar(user, room),
+            email: getEmail(user, room),
+        }
     }
 
     const checkActive = (room) => {
@@ -62,7 +61,7 @@ function Sidebar({setOpenedRoom, rooms, openedRoom}){
 
                 // If axios get the data
                 if(response.data){
-                    setContacts([...contacts, response.data.contact]);
+                    loadContact([...contacts, response.data.contact]);
                     if(response.data.room){
                         setRoomList([...roomList, response.data.room]);
                     }
@@ -82,33 +81,35 @@ function Sidebar({setOpenedRoom, rooms, openedRoom}){
         <StyledSidebar>
             { modalOpen ? <ModalInput inputHandler={setEmailInput} setModalOpen={setModalOpen} actionHandler={addNewContact}/> : '' }
             { alertOpen ? <ModalAlert setAlertMessage={setAlertMessage} message={alertMessage} setModalOpen={setAlertOpen}/> : '' }
-            <form className="chat-input">
+            {/* <form className="chat-input">
                 <input type="text" name="text" placeholder="Search contact"/>
-            </form>
+            </form> */}
+            <div className="sidebar-header">
+                <h1>LetsChat</h1>
+            </div>
             <div className="sidebar-body">
                 {
                     roomList?.map((room, index)=> {
-                        // Hiding empty room chat
-                        if(room.messages.length > 0){
-                            return(
-                                <span key={index} onClick={() => {
-                                    setOpenedRoom(openedRoomSend(room, user))}
-                                }>
-                                    <ChatPreview
-                                        active={checkActive(room)}
-                                        preview={getEmail(user, room)}
-                                        username={limitCharacter(getUsername(user, room, contacts), 13)}
-                                        avatar={getAvatar(user, room)}
-                                    />
-                                </span>
-                            )
-                        }else{
-                            return ''
-                        }
+                        let lastIndex = roomObject?.[room._id].length - 1;
+                        const filter = roomObject?.[room._id].filter(e => e.read === false && e.recipientId === user._id)
+                        return(
+                            <span key={index} onClick={() => {
+                                setOpenedRoom(openedRoomSend(room, user))}
+                            }>
+                                <ChatPreview
+                                    active={checkActive(room)}
+                                    preview={getEmail(user, room)}
+                                    username={limitCharacter(getUsername(user, room, contacts), 13)}
+                                    avatar={getAvatar(user, room)}
+                                    lastMessage={roomObject?.[room._id][lastIndex]}
+                                    messageCount={filter?.length}
+                                />
+                            </span>
+                        )
                     })
                 }
             </div>
-            <div className="sidebar-header">
+            <div className="sidebar-footer">
                 <button type="submit" onClick={() => setModalOpen(true)}>Add Contact</button>
             </div>
         </StyledSidebar>
@@ -119,9 +120,40 @@ const StyledSidebar = Styled.div`
     display:flex;
     flex-direction:column;
     flex:0.3;
-    min-width:300px;
+    min-width:320px;
     border-right:1px solid #ddd;
     position:relative;
+
+    .sidebar-header{
+        min-height:79px;
+        width:100%;
+        background:#fff;
+        border-bottom:1px solid #ddd;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        
+        h1{
+            font-family: 'Lobster', cursive;
+            font-size: 2.3rem;
+            margin: 0;
+            color: black;
+            font-weight: 400;
+        }
+
+        button{
+            border: none;
+            padding: .75rem 1rem;
+            background: #1990ff;
+            border-radius: .5rem;
+            cursor: pointer;
+            color: #fff;
+
+            &:hover{
+                background:#4ca9ff;
+            }
+        }
+    }
 
     .chat-input{
         display:flex;
@@ -153,8 +185,7 @@ const StyledSidebar = Styled.div`
         }
     }
 
-    .sidebar-header{
-        border-bottom:1px solid #ddd;
+    .sidebar-footer{
         padding:1rem;
         display:flex;
         justify-content:center;
@@ -162,14 +193,15 @@ const StyledSidebar = Styled.div`
         height:72px;
 
         button{
-            border:1px solid #ddd;
-            padding:.5rem 1rem;
-            background:#f9f9f9;
-            border-radius:.5rem;
-            cursor:pointer;
+            border: none;
+            padding: .75rem 1rem;
+            background: #1990ff;
+            border-radius: .5rem;
+            cursor: pointer;
+            color: #fff;
 
             &:hover{
-                border:1px solid #999;
+                background:#4ca9ff;
             }
         }
     }
@@ -179,6 +211,10 @@ const StyledSidebar = Styled.div`
         flex-direction:column;
         overflow-y:scroll;
         flex-grow:1;
+
+        span{
+            position:relative;
+        }
 
         &::-webkit-scrollbar {
             width: 10px;
@@ -195,5 +231,14 @@ const StyledSidebar = Styled.div`
         }
     }
 `
+const mapDispatchToProps = dispatch => ({
+    loadContact: (e) => dispatch(loadContact(e))
+});
 
-export default Sidebar;
+const mapStateToProps = state => ({
+    user: state.user.user,
+    contacts: state.contacts.contacts,
+    roomObject: state.rooms.rooms
+})
+
+export default connect(mapStateToProps, mapDispatchToProps )(Sidebar);

@@ -16,3 +16,7 @@ export function cekPergantianHari(messageBeforeThis, messageObject){
 export function getTime(timestamp){
     return format(new Date(timestamp), "hh:mm a")
 }
+
+export function getTimeOnly(timestamp){
+    return format(new Date(timestamp), "hh:mm")
+}

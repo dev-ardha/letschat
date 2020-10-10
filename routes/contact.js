@@ -60,13 +60,13 @@ router.post('/remove',  async (req, res) => {
     const meId = req.body.meId
 
     // Find me
-    const me = await User.findById(meId)
+    const me = await User.findById(meId).populate('contacts')
 
     // Remove from contact
     await me.contacts.pull(contactId);
     await me.save();
 
-    res.status(201).send(me.contacts);
+    res.status(201).send({contact: me.contacts});
 })
 
 module.exports = router;

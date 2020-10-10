@@ -37,15 +37,9 @@ const server = http.createServer(app);
 const io = socket(server);
 server.listen(PORT, () => console.log(`Listening on port ${PORT}`));
 
-let onlineCount = 0
 io.on('connection', (socket) => {
     const id = socket.handshake.query.id
     socket.join(id)
-
-    if(id){
-        onlineCount = onlineCount + 1
-        io.emit('online', onlineCount)
-    }
 
     socket.on('userOnline', id => {
         socket.on('isTyping', msg => {
@@ -78,7 +72,6 @@ io.on('connection', (socket) => {
 
     socket.on('disconnect', () => {
         // When user dissconnected
-        onlineCount = onlineCount - 1
-        io.emit('online', onlineCount)
+        
     })
 });

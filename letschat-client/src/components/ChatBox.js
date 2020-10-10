@@ -1,19 +1,22 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Styled from '@emotion/styled'
 import ChatHeader from './ChatHeader'
 import Message from './Message'
-import { UserContext } from '../contexts/UserContext'
 import { useSocket } from '../contexts/SocketContext'
-import { fetchData, fetchNewMessage } from '../utils/user'
+import { fetchNewMessage, readMessages } from '../utils/user'
+import Loader from './Loader'
+import { connect } from 'react-redux'
+import { updateRoom } from '../redux/actions/roomActions'
 
-function ChatBox({openedRoom, setCurrentText, currentText}){
+function ChatBox({openedRoom, setCurrentText, currentText, user, rooms, updateRoom}){
     // Context
-    const [user] = useContext(UserContext)
     const socket = useSocket()
+
     const [listOfMessage, setListOfMessage] = useState([])
     const [isTyping, setIsTyping] = useState(false)
     const [timeOut, setTimeOut] = useState(0)
     const [typingMessage, setTypingMessage] = useState('')
+    const [loading, setLoading] = useState()
 
     function timeoutFunction(){
         setIsTyping(false)
@@ -35,34 +38,45 @@ function ChatBox({openedRoom, setCurrentText, currentText}){
     // Refresh the message data when switching tabs
     useEffect(() => {
         if(openedRoom){
+            setLoading(true)
             socket.emit('userOnline', openedRoom?.recipientId)
 
-            fetchData(openedRoom).then(messages => {
-                setListOfMessage(messages)
+            setListOfMessage(rooms[openedRoom._id])
+            setLoading(false)
+        }
+    }, [openedRoom, socket, rooms])
+
+    useEffect(() => {
+        if(openedRoom){
+            readMessages(user._id, openedRoom._id).then((messages) => {
+                updateRoom({messages: messages, roomId: messages[0].roomId})
             })
         }
-    }, [openedRoom, socket])
+        // eslint-disable-next-line
+    }, [openedRoom, user])
 
     // Get the realtime data from the server when user have a new message
     useEffect(() => {
         socket.on('sendMessage', sendMessage => {
             fetchNewMessage(sendMessage).then(messages => {
-                setListOfMessage(messages)
+                updateRoom({messages: messages, roomId: messages[0].roomId})
             })
         })
         socket.on('newMessage', newMessage => {
             fetchNewMessage(newMessage).then(messages => {
-                setListOfMessage(messages)
-            })
+                updateRoom({messages: messages, roomId: messages[0].roomId})
+            });
         })
-        
-        socket.on('typing', msg => {
+    }, [socket, user, updateRoom, openedRoom])
+
+    useEffect(() => {
+        socket.on('typing', () => {
             setTypingMessage('Typing...')
         })
         socket.on('unTyping', () => {
             setTypingMessage('')
         })
-    }, [socket, user])
+    }, [socket])
 
     // Send data to the server
     function sendMessage(e){
@@ -77,6 +91,8 @@ function ChatBox({openedRoom, setCurrentText, currentText}){
         }
         
         socket.emit('chat', data);
+
+        // Reset everything when message sent
         e.currentTarget.elements.text.value = '';
         setIsTyping(false)
         socket.emit('notTyping', '');
@@ -90,24 +106,25 @@ function ChatBox({openedRoom, setCurrentText, currentText}){
                         <ChatHeader
                             email={openedRoom.email}
                             username={openedRoom.username}
+                            photo={openedRoom.photo}
                             typingMessage={typingMessage}
                             recipientId={openedRoom.recipientId}
                         />
                         <div className="conversation-box">
-                            { typingMessage ? typingMessage : '' }
                             {
-                                listOfMessage?.map((message, index) => {
-                                    return(
-                                        <Message
-                                            messageObject={listOfMessage[index]}
-                                            messageBeforeThis={listOfMessage[index - 1]}
-                                            timestamp={message.createdAt}
-                                            listOfMessage={listOfMessage}
-                                            index={index} key={index}
-                                            position={message.senderId === user?._id ? 'right' : 'left'}
-                                            message={message.message}/>
-                                    )
-                                })
+                                loading ? <span className="loading"><Loader/></span> : (
+                                    listOfMessage?.slice(0).reverse().map((message, index) => {
+                                        return(
+                                            <Message
+                                                messageObject={listOfMessage[listOfMessage.length - (index + 1)]}
+                                                messageBeforeThis={listOfMessage[(listOfMessage.length - (index + 1)) - 1]}
+                                                timestamp={message.createdAt}
+                                                key={index}
+                                                position={message.senderId === user?._id ? 'right' : 'left'}
+                                                message={message.message}/>
+                                        )
+                                    })
+                                )
                             }
                         </div>
                         <form className="chat-input" onSubmit={sendMessage}>
@@ -144,13 +161,20 @@ const StyledChatBox = Styled.div`
     flex-direction:column;
     flex:1;
 
+    .loading{
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
     .conversation-box{
         display:flex;
-        flex-direction:column;
+        flex-direction:column-reverse;
         padding:1rem 2rem;
         overflow-y:scroll;
         flex-grow:1;
-        max-height: calc(100vh - 184px);
+        max-height: calc(100vh - 142px);
     }
 
     .chat-input{
@@ -185,4 +209,13 @@ const StyledChatBox = Styled.div`
     }
 `
 
-export default ChatBox;
+const mapDispatchToProps = dispatch => ({
+    updateRoom: (e) => dispatch(updateRoom(e)),
+});
+
+const mapStateToProps = state => ({
+    user: state.user.user,
+    rooms: state.rooms.rooms
+})
+
+export default connect(mapStateToProps, mapDispatchToProps)(ChatBox);

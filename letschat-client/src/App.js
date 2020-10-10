@@ -2,17 +2,18 @@ import React from 'react';
 import Styled from '@emotion/styled'
 import HomePage from './pages/HomePage'
 import Login from './pages/Login'
-import { UserProvider } from './contexts/UserContext'
 import { MessageProvider } from './contexts/MessageContext'
 import { ContactProvider } from './contexts/ContactContext'
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import { store } from './redux/store'
+import { Provider } from 'react-redux'
 
 function App() {
     return (
+        <Provider store={store}>
         <Router>
             <div className="App">
                 <StyledApp>
-                <UserProvider>
                 <ContactProvider>
                 <MessageProvider>
                     <Switch>
@@ -21,10 +22,10 @@ function App() {
                     </Switch>
                 </MessageProvider>
                 </ContactProvider>
-                </UserProvider>
                 </StyledApp>
             </div>
         </Router>
+        </Provider>
     );
 }
 

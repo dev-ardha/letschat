@@ -45,3 +45,13 @@ export async function fetchNewMessage(newMessage){
         return response.data.messages
     }
 }
+
+export async function readMessages(meId, roomId){
+    const response = await axios.post(`/api/v1/message/read`, {
+        meId: meId,
+        roomId: roomId
+    })
+    if(response.data){
+        return response.data
+    }
+}

@@ -1,30 +1,18 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React from 'react'
 import Styled from '@emotion/styled'
-import { UserContext } from '../contexts/UserContext'
-import { useSocket } from '../contexts/SocketContext'
+import { connect } from 'react-redux'
 
-function Navbar(){
-    const [user] = useContext(UserContext)
-    const socket = useSocket()
-    const [count, setCount] = useState()
-
-    useEffect(() => {
-        socket.on('online', count => {
-            setCount(count)
-        })
-        
-    }, [socket])
-
+function Navbar({user}){
     return(
         <StyledNavbar>
-            <div className="navbar-left">{count} user online</div>
+            <div className="navbar-left"></div>
             <div className="navbar-right"><p>{user.username}</p></div>
         </StyledNavbar>
     )
 }
 
 const StyledNavbar = Styled.div`
-    display:flex;
+    display:none;
     width:100%;
     height:45px;
     border-bottom:1px solid #ddd;
@@ -45,4 +33,8 @@ const StyledNavbar = Styled.div`
     }
 `
 
-export default Navbar;
+const mapStateToProps = state => ({
+    user: state.user.user
+})
+
+export default connect(mapStateToProps )(Navbar);

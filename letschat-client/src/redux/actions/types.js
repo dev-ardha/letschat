@@ -1,0 +1,7 @@
+export const AUTH_SUCCESS = 'AUTH_SUCCESS'
+export const AUTH_FAILED = 'AUTH_FAILED'
+export const CONTACT_LOADED = 'CONTACT_LOADED'
+export const REMOVE_CONTACT = 'REMOVE_CONTACT'
+export const ADD_CONTACT = 'ADD_CONTACT'
+export const ROOM_LOADED = 'ROOM_LOADED'
+export const UPDATE_ROOM = 'UPDATE_ROOM'

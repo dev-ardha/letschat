@@ -1,28 +1,17 @@
-import React, { useRef, useEffect } from 'react'
+import React from 'react'
 import Styled from '@emotion/styled'
 import { cekPergantianHari, getTime } from '../utils/date'
 import { HiUser } from 'react-icons/hi'
 import {format} from 'date-fns'
 
-function Message({position, message, index, listOfMessage, timestamp, messageBeforeThis, messageObject}){
-
-    const isLastMessage = listOfMessage.length - 1 === index;
-    const lastMessageRef = useRef();
-
-    useEffect(() => {
-        if(lastMessageRef.current){
-            lastMessageRef.current.scrollIntoView({behavior: "smooth"})
-        }
-    })
-
+function Message({position, message, timestamp, messageBeforeThis, messageObject}){
     const getDate = new Date(messageObject.createdAt)
     const day = format(getDate, 'MMMM dd, yyyy')
 
     return(
         <>
-        { cekPergantianHari(messageBeforeThis, messageObject) ? '' : <StyledDate><span>{day}</span></StyledDate> }
         <StyledMessage position={position}>
-            <div className="message-wrapper" ref={isLastMessage ? lastMessageRef : null}>
+            <div className="message-wrapper">
                 { position === 'left' ? (
                 <div className="avatar">
                     <HiUser/>
@@ -34,6 +23,7 @@ function Message({position, message, index, listOfMessage, timestamp, messageBef
             </div>
             <span className="timestamp">{getTime(timestamp)}</span>
         </StyledMessage>
+        { cekPergantianHari(messageBeforeThis, messageObject)  ? '' : <StyledDate><span>{day}</span></StyledDate> }
         </>
     )
 }
