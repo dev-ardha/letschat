@@ -1,7 +1,7 @@
 import Axios from 'axios'
 
 const instance = Axios.create({
-    baseURL: 'http://localhost:4000'
+    baseURL: 'https://web-letschat.herokuapp.com'
 })
 
 export default instance;
