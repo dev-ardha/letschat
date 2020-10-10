@@ -6,6 +6,7 @@ const http = require('http')
 require('dotenv').config();
 const Room = require('./models/room.model')
 const Message = require('./models/message.model')
+const path = require('path')
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -20,10 +21,6 @@ mongoose.connect(process.env.MONGO_URI,
 app.use(cors());
 app.use(express.json());
 
-app.get('/', (req, res) => {
-    res.status(200).send("Hello")
-})
-
 // Express router
 const messageRouter = require('./routes/message')
 const authRouter = require('./routes/auth')
@@ -32,6 +29,15 @@ const contactRouter = require('./routes/contact');
 app.use('/api/v1/message', messageRouter)
 app.use('/api/v1/auth', authRouter)
 app.use('/api/v1/contact', contactRouter)
+
+if(process.env.NODE_ENV === 'production') {
+    app.use(express.static('letschat-client/build'));
+    
+    app.get('*', (req, res)=>{
+            res.sendFile(path.resolve(__dirname, 'letschat-client', 'build', 'index.html'));
+    });
+
+}
 
 const server = http.createServer(app);
 const io = socket(server);

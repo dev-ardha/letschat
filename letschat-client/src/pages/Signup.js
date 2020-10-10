@@ -23,7 +23,8 @@ function Login() {
             username: username
         }).then((response) => {
             setLoading(false)
-            Cookies.set('accToken', response.data.token, { expires: 1 })
+            Cookies.set('accToken', response.data.token, { expires: 1 });
+            window.localStorage.setItem('peggnid', response.data.user._id );
             history.push('/')
         }).catch(err => {
             setLoading(false)

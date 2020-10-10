@@ -21,7 +21,7 @@ function HomePage({loadUser, user, loadRoom}) {
     const [currentText, setCurrentText] = useState();
 
     const history = useHistory();
-    const me = window.localStorage.getItem('userId')
+    const me = window.localStorage.getItem('peggnid')
 
     if(!me){
         history.push('/login')
@@ -29,34 +29,36 @@ function HomePage({loadUser, user, loadRoom}) {
 
     useEffect(() => {
         async function fetchData(){
-            const response = await axios.get(`/api/v1/auth/me/${me}`)
-            if(response.data){
-                const secret = response.data.secret
-                const token = Cookies.get('accToken');
-
-                if(!token){
-                    history.push('/login')
-                }
-
-                try {
-                    const decoded = jwt.verify(token, secret);
-                    if(decoded){
-                        if(decoded.id === response.data.user._id){
-                            loadUser(response.data.user)
-
-                            let rooms = {}
-                            response.data.user.rooms.map(room => {
-                                return rooms[room._id] = room.messages
-                            })
-
-                            loadRoom(rooms);
-                        }
+            if(me){
+                const response = await axios.get(`/api/v1/auth/me/${me}`)
+                if(response.data){
+                    const secret = response.data.secret
+                    const token = Cookies.get('accToken');
+    
+                    if(!token){
+                        history.push('/login')
                     }
-                } catch (error) {
+    
+                    try {
+                        const decoded = jwt.verify(token, secret);
+                        if(decoded){
+                            if(decoded.id === response.data.user._id){
+                                loadUser(response.data.user)
+    
+                                let rooms = {}
+                                response.data.user.rooms.map(room => {
+                                    return rooms[room._id] = room.messages
+                                })
+    
+                                loadRoom(rooms);
+                            }
+                        }
+                    } catch (error) {
+                        history.push('/login')
+                    }
+                }else{
                     history.push('/login')
                 }
-            }else{
-                history.push('/login')
             }
         }
         fetchData();

@@ -23,8 +23,6 @@ function ModalContacts({ setModalOpen, contacts, user, roomList, setOpenedRoom }
                     <ul className="contacts">
                         {
                             roomList.length ? (
-                                <p>You don't have any contact yet</p>
-                            ): (
                                 roomList?.map((room, index) => {
                                     console.log(room)
                                     return(
@@ -41,6 +39,8 @@ function ModalContacts({ setModalOpen, contacts, user, roomList, setOpenedRoom }
                                         </li>  
                                     )
                                 })
+                            ): (
+                                <p>You don't have any contact yet</p>
                             )
                         }
                     </ul>

@@ -41,7 +41,7 @@ router.post('/register',  async (req, res) => {
             expiresIn: '1d',
         });
 
-        res.status(200).send({msg: "Authentication success.", token: accessToken})
+        res.status(200).send({msg: "Authentication success.", token: accessToken, user: newUser})
 
     } catch (err) {
         res.status(500).send({msg: "There's a problem. Please try again."})
@@ -69,9 +69,10 @@ router.post('/login', async (req, res) => {
             expiresIn: '1d',
         });
 
-        res.status(200).send({msg: "Authentication success.", token: accessToken})
+        res.status(200).send({msg: "Authentication success.", token: accessToken, user: user})
 
     } catch (error) {
+        console.log(error)
         res.status(500).send({msg: "There's a problem. Please try again."})
     }
 })
