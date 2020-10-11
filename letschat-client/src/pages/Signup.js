@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Styled from '@emotion/styled'
 import axios from 'axios';
-import { useHistory } from 'react-router-dom'
+import { useHistory, NavLink } from 'react-router-dom'
 import Cookies from 'js-cookie'
 
 function Login() {
