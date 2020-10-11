@@ -11,7 +11,7 @@ export function SocketProvider({id, children}) {
     const [ socket, setSocket ] = useState();
 
     useEffect(() => {
-        const newSocket = io('https://web-letschat.herokuapp.com/',
+        const newSocket = io('/',
         { secure: true },
         { query: { id } }
     )
