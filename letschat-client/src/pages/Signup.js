@@ -52,7 +52,7 @@ function Login() {
                 </div>
                 <button type="submit" disabled={loading ? true : false}>Login</button>
             </form>
-            <p>Already have an account? Log in here</p>
+            <p>Already have an account? <NavLink to="/login">Log in</NavLink> here</p>
         </StyledLogin>
     );
 }

@@ -3,6 +3,7 @@ import Styled from '@emotion/styled'
 import axios from 'axios';
 import { useHistory } from 'react-router-dom'
 import Cookies from 'js-cookie'
+import {NavLink} from 'react-router-dom';
 
 function Login() {
     const history = useHistory()
@@ -47,7 +48,7 @@ function Login() {
                 </div>
                 <button type="submit" disabled={loading ? true : false}>Login</button>
             </form>
-            <p>Don't have an account? Sign In here.</p>
+            <p>Don't have an account? <NavLink to="/signup">Sign Up</NavLink> here.</p>
         </StyledLogin>
     );
 }

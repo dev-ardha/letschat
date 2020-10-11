@@ -2,6 +2,7 @@ import React from 'react';
 import Styled from '@emotion/styled'
 import HomePage from './pages/HomePage'
 import Login from './pages/Login'
+import Signup from './pages/Signup'
 import { MessageProvider } from './contexts/MessageContext'
 import { ContactProvider } from './contexts/ContactContext'
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
@@ -19,6 +20,7 @@ function App() {
                     <Switch>
                         <Route path="/" exact component={HomePage} />
                         <Route path="/login" exact component={Login} />
+                        <Route path="/signup" exact component={Signup} />
                     </Switch>
                 </MessageProvider>
                 </ContactProvider>
